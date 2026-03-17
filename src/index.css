@@ -5,14 +5,14 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
   
-  --color-bg: #0A0A0B;
-  --color-surface: #141417;
-  --color-surface-hover: #1C1C21;
-  --color-border: #27272A;
-  --color-accent: #3B82F6;
-  --color-accent-hover: #2563EB;
-  --color-text-primary: #FAFAFA;
-  --color-text-secondary: #A1A1AA;
+  --color-bg: #161618;
+  --color-surface: #202022;
+  --color-surface-hover: #2A2A2D;
+  --color-border: #303033;
+  --color-accent: #9d7bfa;
+  --color-accent-hover: #8b5cf6;
+  --color-text-primary: #f4f4f5;
+  --color-text-secondary: #a1a1aa;
 }
 
 @layer base {
@@ -22,7 +22,7 @@
 }
 
 .glass {
-  @apply bg-surface/80 backdrop-blur-md border border-border;
+  @apply bg-surface/80 border border-border;
 }
 
 .card-hover {
