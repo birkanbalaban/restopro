@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   LayoutDashboard, 
   Map as MapIcon, 
@@ -131,38 +131,51 @@ const StatCard = ({ label, value, trend, icon: Icon, color }: any) => (
 
 // --- Views ---
 
-const DashboardView = ({ sales, menuItems }: { sales: SaleRecord[], menuItems: MenuItem[] }) => (
-  <div className="space-y-8 animate-in fade-in duration-500">
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <StatCard 
-        label="Günlük Toplam Satış" 
-        value={`₺${sales.reduce((acc, s) => acc + s.total, 0).toLocaleString('tr-TR')}`} 
-        trend={12} 
-        icon={TrendingUp} 
-        color="bg-blue-500" 
-      />
-      <StatCard 
-        label="Toplam Sipariş" 
-        value={sales.length} 
-        trend={8} 
-        icon={UtensilsCrossed} 
-        color="bg-purple-500" 
-      />
-      <StatCard 
-        label="Nakit Ödemeler" 
-        value={`₺${sales.filter(s => s.paymentMethod === 'cash').reduce((acc, s) => acc + s.total, 0).toLocaleString('tr-TR')}`} 
-        trend={-2} 
-        icon={Banknote} 
-        color="bg-emerald-500" 
-      />
-      <StatCard 
-        label="Kart Ödemeleri" 
-        value={`₺${sales.filter(s => s.paymentMethod === 'card').reduce((acc, s) => acc + s.total, 0).toLocaleString('tr-TR')}`} 
-        trend={15} 
-        icon={CreditCard} 
-        color="bg-orange-500" 
-      />
-    </div>
+const DashboardView = ({ sales, menuItems }: { sales: SaleRecord[], menuItems: MenuItem[] }) => {
+  const salesStats = useMemo(() => {
+    return sales.reduce((acc, sale) => {
+      acc.total += sale.total;
+      if (sale.paymentMethod === 'cash') {
+        acc.cashTotal += sale.total;
+      } else if (sale.paymentMethod === 'card') {
+        acc.cardTotal += sale.total;
+      }
+      return acc;
+    }, { total: 0, cashTotal: 0, cardTotal: 0 });
+  }, [sales]);
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          label="Günlük Toplam Satış"
+          value={`₺${salesStats.total.toLocaleString('tr-TR')}`}
+          trend={12}
+          icon={TrendingUp}
+          color="bg-blue-500"
+        />
+        <StatCard
+          label="Toplam Sipariş"
+          value={sales.length}
+          trend={8}
+          icon={UtensilsCrossed}
+          color="bg-purple-500"
+        />
+        <StatCard
+          label="Nakit Ödemeler"
+          value={`₺${salesStats.cashTotal.toLocaleString('tr-TR')}`}
+          trend={-2}
+          icon={Banknote}
+          color="bg-emerald-500"
+        />
+        <StatCard
+          label="Kart Ödemeleri"
+          value={`₺${salesStats.cardTotal.toLocaleString('tr-TR')}`}
+          trend={15}
+          icon={CreditCard}
+          color="bg-orange-500"
+        />
+      </div>
 
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div className="lg:col-span-2 glass p-6 rounded-2xl">
@@ -234,7 +247,8 @@ const DashboardView = ({ sales, menuItems }: { sales: SaleRecord[], menuItems: M
       </div>
     </div>
   </div>
-);
+  );
+};
 
 const FloorPlanView = ({ tables, menuItems, orders, showToast, isManager }: { tables: Table[], menuItems: MenuItem[], orders: Order[], showToast: (m: string, t?: 'success' | 'error') => void, isManager: boolean }) => {
   const [activeSection, setActiveSection] = useState('Ana Salon');
