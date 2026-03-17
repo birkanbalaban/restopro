@@ -105,7 +105,7 @@ export const addOrderItem = async (
       updatedItems[existingItemIndex].quantity += 1;
     } else {
       const newItem: OrderItem = {
-        id: Math.random().toString(36).substr(2, 9),
+        id: crypto.randomUUID(),
         menuItemId: item.id,
         name: item.name,
         quantity: 1,
