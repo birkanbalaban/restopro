@@ -56,6 +56,10 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// --- Icons / Components ---
+const NotificationIcon = () => <Bell size={20} className="text-text-secondary hover:text-white transition-colors" />;
+const SettingsIcon = () => <Settings size={20} className="text-text-secondary hover:text-white transition-colors" />;
+
 // --- Components ---
 
 const Toast = ({ message, type, onClose }: { message: string, type: 'success' | 'error', onClose: () => void }) => (
@@ -92,39 +96,33 @@ const SidebarItem = ({
     className={cn(
       "flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-200 group",
       active 
-        ? "bg-accent text-white shadow-lg shadow-accent/20" 
-        : "text-text-secondary hover:bg-surface hover:text-text-primary"
+        ? "bg-surface-hover text-white font-semibold"
+        : "text-text-secondary hover:text-white"
     )}
   >
-    <Icon size={20} className={cn(active ? "text-white" : "group-hover:scale-110 transition-transform")} />
+    <Icon size={18} className={cn(active ? "text-white" : "text-text-secondary group-hover:text-white transition-colors")} />
     <span className="font-medium">{label}</span>
-    {active && (
-      <motion.div 
-        layoutId="active-pill"
-        className="ml-auto w-1.5 h-1.5 rounded-full bg-white"
-      />
-    )}
   </button>
 );
 
 const StatCard = ({ label, value, trend, icon: Icon, color }: any) => (
-  <div className="glass p-6 rounded-2xl flex flex-col gap-4">
+  <div className="glass p-6 rounded-3xl bg-[#252528] flex flex-col gap-4 border-none shadow-md">
     <div className="flex justify-between items-start">
-      <div className={cn("p-3 rounded-xl", color)}>
+      <div className={cn("p-3 rounded-2xl", color)}>
         <Icon size={24} className="text-white" />
       </div>
       {trend && (
         <span className={cn(
-          "text-xs font-medium px-2 py-1 rounded-full",
-          trend > 0 ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"
+          "text-xs font-bold px-3 py-1 rounded-full",
+          trend > 0 ? "bg-[#4ADE80]/10 text-[#4ADE80]" : "bg-rose-500/10 text-rose-500"
         )}>
           {trend > 0 ? '+' : ''}{trend}%
         </span>
       )}
     </div>
     <div>
-      <p className="text-text-secondary text-sm font-medium">{label}</p>
-      <h3 className="text-2xl font-bold mt-1">{value}</h3>
+      <p className="text-text-secondary text-sm font-semibold uppercase tracking-wider mb-1">{label}</p>
+      <h3 className="text-3xl font-black text-white">{value}</h3>
     </div>
   </div>
 );
@@ -133,70 +131,77 @@ const StatCard = ({ label, value, trend, icon: Icon, color }: any) => (
 
 const DashboardView = ({ sales, menuItems }: { sales: SaleRecord[], menuItems: MenuItem[] }) => (
   <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="flex items-center justify-between">
+       <h2 className="text-2xl font-bold">Reports & Analytics</h2>
+       <button className="bg-[#252528] px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-surface-hover transition-colors">
+          <Clock size={16} /> Today
+       </button>
+    </div>
+
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <StatCard 
-        label="Günlük Toplam Satış" 
+        label="Daily Revenue"
         value={`₺${sales.reduce((acc, s) => acc + s.total, 0).toLocaleString('tr-TR')}`} 
         trend={12} 
         icon={TrendingUp} 
-        color="bg-blue-500" 
+        color="bg-accent"
       />
       <StatCard 
-        label="Toplam Sipariş" 
+        label="Total Orders"
         value={sales.length} 
         trend={8} 
         icon={UtensilsCrossed} 
-        color="bg-purple-500" 
+        color="bg-[#4ADE80]"
       />
       <StatCard 
-        label="Nakit Ödemeler" 
+        label="Cash Payments"
         value={`₺${sales.filter(s => s.paymentMethod === 'cash').reduce((acc, s) => acc + s.total, 0).toLocaleString('tr-TR')}`} 
         trend={-2} 
         icon={Banknote} 
-        color="bg-emerald-500" 
+        color="bg-[#FCD34D]"
       />
       <StatCard 
-        label="Kart Ödemeleri" 
+        label="Card Payments"
         value={`₺${sales.filter(s => s.paymentMethod === 'card').reduce((acc, s) => acc + s.total, 0).toLocaleString('tr-TR')}`} 
         trend={15} 
         icon={CreditCard} 
-        color="bg-orange-500" 
+        color="bg-blue-500"
       />
     </div>
 
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div className="lg:col-span-2 glass p-6 rounded-2xl">
+      <div className="lg:col-span-2 glass p-6 rounded-3xl bg-[#252528] border-none shadow-md">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-bold">Son Satışlar</h3>
-          <button className="text-accent text-sm font-medium hover:underline">Tümünü Gör</button>
+          <h3 className="text-xl font-bold">Recent Sales</h3>
+          <button className="text-accent text-sm font-bold hover:underline">View All</button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="text-left text-text-secondary text-sm border-b border-border pb-4">
-                <th className="pb-4 font-medium">Masa</th>
-                <th className="pb-4 font-medium">Ödeme Yöntemi</th>
-                <th className="pb-4 font-medium">Saat</th>
-                <th className="pb-4 font-medium">Ürün Sayısı</th>
-                <th className="pb-4 font-medium text-right">Toplam</th>
+              <tr className="text-left text-text-secondary text-xs uppercase tracking-wider border-b border-border/50 pb-4">
+                <th className="pb-4 font-bold">Table</th>
+                <th className="pb-4 font-bold">Payment</th>
+                <th className="pb-4 font-bold">Time</th>
+                <th className="pb-4 font-bold">Items</th>
+                <th className="pb-4 font-bold text-right">Total</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-border/50">
               {sales.map((sale) => (
-                <tr key={sale.id} className="group hover:bg-surface/50 transition-colors">
-                  <td className="py-4 font-medium">{sale.tableName}</td>
+                <tr key={sale.id} className="group hover:bg-white/5 transition-colors">
+                  <td className="py-4 font-bold">{sale.tableName}</td>
                   <td className="py-4">
                     <span className={cn(
-                      "flex items-center gap-2 text-sm",
-                      sale.paymentMethod === 'card' ? "text-blue-400" : "text-emerald-400"
+                      "flex items-center gap-2 text-xs font-bold px-3 py-1 rounded-full w-fit",
+                      sale.paymentMethod === 'card' ? "bg-blue-500/10 text-blue-400" : "bg-[#4ADE80]/10 text-[#4ADE80]"
                     )}>
                       {sale.paymentMethod === 'card' ? <CreditCard size={14} /> : <Banknote size={14} />}
-                      {sale.paymentMethod === 'card' ? 'Kart' : 'Nakit'}
+                      {sale.paymentMethod === 'card' ? 'Card' : 'Cash'}
                     </span>
                   </td>
-                  <td className="py-4 text-text-secondary text-sm">{sale.timestamp}</td>
-                  <td className="py-4 text-text-secondary text-sm">{sale.itemsCount} Ürün</td>
-                  <td className="py-4 text-right font-bold">₺{sale.total}</td>
+                  <td className="py-4 text-text-secondary text-sm font-medium">{sale.timestamp}</td>
+                  <td className="py-4 text-text-secondary text-sm font-medium">{sale.itemsCount} Items</td>
+                  <td className="py-4 text-right font-black text-white">₺{sale.total.toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>
@@ -204,29 +209,29 @@ const DashboardView = ({ sales, menuItems }: { sales: SaleRecord[], menuItems: M
         </div>
       </div>
 
-      <div className="glass p-6 rounded-2xl">
-        <h3 className="text-lg font-bold mb-6">En Çok Satanlar</h3>
+      <div className="glass p-6 rounded-3xl bg-[#252528] border-none shadow-md">
+        <h3 className="text-xl font-bold mb-6">Top Sellers</h3>
         <div className="space-y-6">
           {menuItems.slice(0, 4).map((item, idx) => (
-            <div key={item.id} className="flex items-center gap-4">
+            <div key={item.id} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/5 transition-colors">
               <div className="relative">
                 <img 
                   src={item.image} 
                   alt={item.name} 
-                  className="w-12 h-12 rounded-xl object-cover"
+                  className="w-14 h-14 rounded-xl object-cover border border-border/50"
                   referrerPolicy="no-referrer"
                 />
-                <span className="absolute -top-2 -left-2 w-5 h-5 bg-accent rounded-full flex items-center justify-center text-[10px] font-bold">
+                <span className="absolute -top-2 -left-2 w-6 h-6 bg-accent rounded-full flex items-center justify-center text-[10px] font-black text-white shadow-lg">
                   {idx + 1}
                 </span>
               </div>
-              <div className="flex-1">
-                <h4 className="font-medium text-sm">{item.name}</h4>
-                <p className="text-text-secondary text-xs">{item.category}</p>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-bold text-sm truncate">{item.name}</h4>
+                <p className="text-text-secondary text-xs mt-0.5">{item.category}</p>
               </div>
               <div className="text-right">
-                <p className="font-bold text-sm">₺{item.price}</p>
-                <p className="text-emerald-500 text-[10px] font-medium">+12%</p>
+                <p className="font-black text-white">₺{item.price}</p>
+                <p className="text-[#4ADE80] text-[10px] font-bold mt-0.5 flex items-center justify-end gap-0.5"><TrendingUp size={10} /> +12%</p>
               </div>
             </div>
           ))}
@@ -243,6 +248,15 @@ const FloorPlanView = ({ tables, menuItems, orders, showToast, isManager }: { ta
   const [isTransferring, setIsTransferring] = useState(false);
   const [transferTarget, setTransferTarget] = useState<string | null>(null);
   const [isMoveMode, setIsMoveMode] = useState(false);
+
+  const stats = {
+    occupancy: 84,
+    liveRevenue: 1.2,
+    peakWait: '12m',
+    ordersHr: 48,
+    revenue: 4821.00,
+    target: 6000
+  };
   
   // Modifiers state
   const [selectedItemForMod, setSelectedItemForMod] = useState<MenuItem | null>(null);
@@ -305,45 +319,56 @@ const FloorPlanView = ({ tables, menuItems, orders, showToast, isManager }: { ta
   
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-wrap gap-4 items-center justify-between">
-        <div className="flex bg-surface p-1 rounded-xl border border-border">
+      <div className="flex flex-wrap items-center justify-between pb-4 gap-4">
+        <div className="flex bg-[#252528] p-1 rounded-xl border border-border/50">
           {['Ana Salon', 'Teras', 'VIP'].map((section) => (
             <button
               key={section}
               onClick={() => setActiveSection(section)}
               className={cn(
                 "px-6 py-2 rounded-lg text-sm font-medium transition-all",
-                activeSection === section ? "bg-accent text-white shadow-md" : "text-text-secondary hover:text-text-primary"
+                activeSection === section ? "bg-accent text-white shadow-md" : "text-text-secondary hover:text-white"
               )}
             >
               {section}
             </button>
           ))}
         </div>
-        <div className="flex gap-3 items-center">
+
+        <div className="flex items-center gap-4">
           {isManager && (
             <button 
               onClick={() => setIsMoveMode(!isMoveMode)}
               className={cn(
-                "px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all",
-                isMoveMode ? "bg-orange-500 text-white" : "glass hover:bg-white/5"
+                "w-10 h-10 rounded-full flex items-center justify-center transition-all border",
+                isMoveMode ? "bg-orange-500 text-white border-orange-500" : "bg-[#252528] text-text-secondary hover:text-white border-border/50"
               )}
+              title="Masaları Taşı"
             >
-              <Move size={18} /> {isMoveMode ? 'Yerleşimi Kaydet' : 'Masaları Taşı'}
+              <Move size={18} />
             </button>
           )}
-          <div className="flex gap-3">
-            <div className="flex items-center gap-2 text-xs text-text-secondary">
-              <span className="w-3 h-3 rounded-full bg-emerald-500" /> Boş
+
+          <div className="h-6 w-px bg-border/50 mx-2" />
+
+          <div className="flex items-center gap-4 text-xs font-medium">
+            <div className="flex items-center gap-2 text-text-secondary">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#4ADE80]" /> Boş
             </div>
-            <div className="flex items-center gap-2 text-xs text-text-secondary">
-              <span className="w-3 h-3 rounded-full bg-blue-500" /> Dolu
+            <div className="flex items-center gap-2 text-text-secondary">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#FCD34D]" /> Dolu
             </div>
-            <div className="flex items-center gap-2 text-xs text-text-secondary">
-              <span className="w-3 h-3 rounded-full bg-orange-500" /> Hesap
+            <div className="flex items-center gap-2 text-text-secondary">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#A78BFA]" /> Hesap
             </div>
           </div>
         </div>
+
+        {isManager && (
+          <button className="bg-accent hover:bg-accent-hover text-white px-6 py-2.5 rounded-full text-sm font-semibold flex items-center gap-2 transition-all shadow-lg shadow-accent/20">
+            <Plus size={18} /> Masa Ekle
+          </button>
+        )}
       </div>
 
       <div className={cn(
@@ -352,26 +377,49 @@ const FloorPlanView = ({ tables, menuItems, orders, showToast, isManager }: { ta
       )}>
         {tables.filter(t => t.section === activeSection).map((table) => {
           const tableOrder = orders.find(o => o.id === table.activeOrderId && o.status === 'active');
+
+          let bgColor = "bg-[#252528]";
+          let borderColor = "border-transparent";
+          let textColor = "text-text-secondary";
+          let statusText = "BOŞ";
+
+          if (table.status === 'occupied') {
+             bgColor = "bg-[#2A231C]";
+             borderColor = "border-[#FCD34D]/20";
+             textColor = "text-[#FCD34D]";
+             statusText = "DOLU";
+          } else if (table.status === 'bill-requested') {
+             bgColor = "bg-[#1E1C2A]";
+             borderColor = "border-[#A78BFA]/20";
+             textColor = "text-[#A78BFA]";
+             statusText = "HESAP İSTENDİ";
+          } else if (table.status === 'dirty') {
+             bgColor = "bg-[#2A1C1C]";
+             borderColor = "border-rose-500/20";
+             textColor = "text-rose-500";
+             statusText = "KONTROL GEREKİYOR";
+          } else {
+             textColor = "text-[#4ADE80]";
+          }
+
           return (
             <motion.div
               key={table.id}
               layout
               whileHover={!isMoveMode ? { y: -4 } : {}}
               onClick={() => {
-                if (isMoveMode) return;
-                if (table.status !== 'dirty') setSelectedTable(table);
+                 if (isMoveMode) return;
+                 if (table.status === 'free') createOrder(table.id);
+                 else if (table.status !== 'dirty') setSelectedTable(table);
               }}
               className={cn(
-                "glass p-5 rounded-2xl border-l-4 card-hover cursor-pointer relative overflow-hidden",
-                table.status === 'free' && "border-l-emerald-500",
-                table.status === 'occupied' && "border-l-blue-500",
-                table.status === 'bill-requested' && "border-l-orange-500",
-                table.status === 'dirty' && "border-l-zinc-600",
+                "rounded-3xl p-6 border-2 transition-all cursor-pointer relative flex flex-col justify-between min-h-[220px]",
+                bgColor, borderColor,
                 isMoveMode && "cursor-move border-orange-500"
               )}
             >
               {isMoveMode && (
-                <div className="absolute inset-0 bg-orange-500/10 flex items-center justify-center gap-2">
+                <div className="absolute inset-0 bg-orange-500/10 flex items-center justify-center gap-2 z-10 rounded-3xl backdrop-blur-[2px]">
                   <button onClick={(e) => { e.stopPropagation(); handleTableMove(table.id, (table.x || 0) - 1, table.y || 0); }} className="p-2 glass rounded-lg hover:bg-white/20"><ChevronRight className="rotate-180" size={16} /></button>
                   <div className="flex flex-col gap-2">
                     <button onClick={(e) => { e.stopPropagation(); handleTableMove(table.id, table.x || 0, (table.y || 0) - 1); }} className="p-2 glass rounded-lg hover:bg-white/20"><ChevronRight className="-rotate-90" size={16} /></button>
@@ -380,67 +428,109 @@ const FloorPlanView = ({ tables, menuItems, orders, showToast, isManager }: { ta
                   <button onClick={(e) => { e.stopPropagation(); handleTableMove(table.id, (table.x || 0) + 1, table.y || 0); }} className="p-2 glass rounded-lg hover:bg-white/20"><ChevronRight size={16} /></button>
                 </div>
               )}
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h4 className="font-bold text-lg">{table.name}</h4>
-                  <p className="text-text-secondary text-xs">{table.capacity} Kişilik</p>
-                </div>
-                <div className={cn(
-                  "p-2 rounded-lg",
-                  table.status === 'free' ? "bg-emerald-500/10 text-emerald-500" :
-                  table.status === 'occupied' ? "bg-blue-500/10 text-blue-500" :
-                  table.status === 'bill-requested' ? "bg-orange-500/10 text-orange-500" :
-                  "bg-zinc-500/10 text-zinc-500"
-                )}>
-                  {table.status === 'free' ? <CheckCircle2 size={18} /> : 
-                   table.status === 'occupied' ? <Clock size={18} /> : 
-                   table.status === 'bill-requested' ? <Banknote size={18} /> : 
-                   <AlertCircle size={18} />}
-                </div>
+
+              <div className="flex justify-between items-start relative z-0">
+                 <span className="text-4xl font-bold opacity-20">{table.name.replace('Masa ', '').padStart(2, '0')}</span>
+                 {table.status === 'occupied' && (
+                    <div className="flex items-center gap-1.5 text-[#FCD34D] font-bold text-sm bg-[#FCD34D]/10 px-3 py-1 rounded-full">
+                      <Users size={14} /> 4
+                    </div>
+                 )}
+                 {table.status === 'dirty' && (
+                    <AlertCircle size={24} className="text-rose-500" />
+                 )}
               </div>
 
-              {table.status !== 'free' && table.status !== 'dirty' && (
-                <div className="space-y-3">
-                  <div className="flex justify-between items-end">
-                    <span className="text-text-secondary text-xs">Toplam Tutar</span>
-                    <span className="font-bold text-xl">₺{table.currentOrderTotal || 0}</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-border rounded-full overflow-hidden">
-                    <div className="h-full bg-accent w-2/3" />
-                  </div>
-                  <div className="flex justify-between items-center text-[10px] text-text-secondary">
-                    <span>{table.occupiedTime}</span>
-                    <span>{tableOrder?.items.reduce((acc, i) => acc + i.quantity, 0) || 0} Ürün</span>
-                  </div>
-                </div>
-              )}
+              <div className="mt-4 relative z-0">
+                 <h4 className="text-xl font-bold text-white mb-1">{table.name}</h4>
+                 <p className={cn("text-xs font-bold tracking-wider", textColor)}>{statusText}</p>
+              </div>
 
-              {table.status === 'free' && (
-                <div 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    createOrder(table.id);
-                  }}
-                  className="h-20 flex items-center justify-center border-2 border-dashed border-border rounded-xl hover:border-accent/50 transition-colors"
-                >
-                  <Plus size={20} className="text-text-secondary" />
-                </div>
-              )}
+              <div className="mt-6 flex flex-col gap-2 relative z-0">
+                 <div className="flex justify-between text-sm">
+                    <span className="text-text-secondary">{table.status === 'free' ? 'Kapasite:' : table.status === 'bill-requested' ? 'Hesap' : 'Toplam'}</span>
+                    <span className="font-bold text-white">
+                      {table.status === 'free' ? `${table.capacity}` : `₺${(table.currentOrderTotal || 0).toFixed(2)}`}
+                    </span>
+                 </div>
+                 {table.status !== 'free' && table.status !== 'dirty' && (
+                   <div className="flex justify-between text-sm">
+                      <span className="text-text-secondary">Süre</span>
+                      <span className="font-bold text-white">{table.occupiedTime || '0m'}</span>
+                   </div>
+                 )}
+              </div>
 
-              {table.status === 'dirty' && (
+              {table.status === 'dirty' && !isMoveMode && (
                 <div 
                   onClick={(e) => {
                     e.stopPropagation();
                     updateTableStatus(table.id, 'free');
                   }}
-                  className="h-20 flex items-center justify-center bg-zinc-900/50 rounded-xl hover:bg-zinc-900 transition-colors"
+                  className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-3xl opacity-0 hover:opacity-100 transition-opacity z-20"
                 >
-                  <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Temizle</span>
+                  <span className="text-sm font-bold text-white uppercase tracking-wider bg-rose-500 px-6 py-2 rounded-full">Masayı Temizle</span>
                 </div>
               )}
             </motion.div>
           );
         })}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 pt-6">
+        <div className="glass p-6 rounded-3xl bg-[#161618] flex flex-col justify-between">
+           <div>
+              <p className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-4">Servis İstatistikleri</p>
+              <div className="flex justify-between items-end mb-1">
+                 <h3 className="text-4xl font-black">{stats.occupancy}%</h3>
+                 <span className="text-[#4ADE80] font-bold">+₺{stats.liveRevenue}k</span>
+              </div>
+              <div className="flex justify-between text-xs text-text-secondary">
+                 <span>Doluluk</span>
+                 <span>Canlı Ciro</span>
+              </div>
+           </div>
+        </div>
+
+        <div className="lg:col-span-2 glass p-6 rounded-3xl bg-[#252528] flex items-center justify-between">
+           <div className="max-w-[50%]">
+              <h3 className="text-xl font-bold mb-2">Servis Hızı</h3>
+              <p className="text-sm text-text-secondary leading-relaxed mb-6">
+                Ortalama masa süresi şu an 42 dakika. Dünkü öğle servisine göre %12 daha hızlı.
+              </p>
+              <div className="flex gap-4">
+                 <div className="bg-white/5 px-4 py-2 rounded-2xl">
+                    <p className="text-[10px] text-text-secondary uppercase font-bold mb-1">Zirve Bekleme</p>
+                    <p className="text-lg font-bold">{stats.peakWait}</p>
+                 </div>
+                 <div className="bg-white/5 px-4 py-2 rounded-2xl">
+                    <p className="text-[10px] text-text-secondary uppercase font-bold mb-1">Sipariş/Saat</p>
+                    <p className="text-lg font-bold">{stats.ordersHr}</p>
+                 </div>
+              </div>
+           </div>
+           <div className="flex items-end gap-2 h-24">
+              {[40, 70, 50, 60, 40, 90, 60].map((h, i) => (
+                 <div key={i} className={cn("w-8 rounded-t-lg", i === 5 ? "bg-[#A78BFA]" : "bg-white/10")} style={{ height: `${h}%` }} />
+              ))}
+           </div>
+        </div>
+
+        <div className="glass p-6 rounded-3xl bg-[#1A3326] border border-[#4ADE80]/20 flex flex-col justify-between relative overflow-hidden">
+           <div className="relative z-10">
+              <p className="font-bold text-white mb-1">Günün Cirosu</p>
+              <h3 className="text-4xl font-black text-[#4ADE80]">₺{stats.revenue.toLocaleString('tr-TR', {minimumFractionDigits: 2})}</h3>
+           </div>
+           <div className="relative z-10 mt-8">
+              <div className="flex justify-between text-xs text-white/60 mb-2">
+                 <span>Hedef: ₺{stats.target.toLocaleString('tr-TR')}</span>
+                 <span>{Math.round((stats.revenue / stats.target) * 100)}%</span>
+              </div>
+              <div className="h-2 bg-black/40 rounded-full overflow-hidden">
+                 <div className="h-full bg-[#4ADE80] rounded-full" style={{ width: `${(stats.revenue / stats.target) * 100}%` }} />
+              </div>
+           </div>
+        </div>
       </div>
 
       <AnimatePresence>
@@ -1730,141 +1820,83 @@ export default function App() {
   };
 
   return (
-    <div className="flex min-h-screen bg-bg text-text-primary">
-      {/* Sidebar */}
-      <motion.aside 
-        initial={false}
-        animate={{ width: isSidebarOpen ? 280 : 80 }}
-        className="glass border-r border-border flex flex-col sticky top-0 h-screen z-50 overflow-hidden"
-      >
-        <div className="p-6 flex items-center gap-3">
-          <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-accent/20">
-            <UtensilsCrossed className="text-white" size={24} />
+    <div className="flex flex-col min-h-screen bg-bg text-text-primary">
+      {/* Top Header */}
+      <header className="h-16 flex items-center justify-between px-6 border-b border-border bg-[#161618] sticky top-0 z-40">
+        <div className="flex items-center gap-10">
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold tracking-tight">Resto<span className="text-accent">Pro</span></h1>
           </div>
-          {isSidebarOpen && (
-            <motion.h1 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-xl font-black tracking-tighter"
-            >
-              RESTO<span className="text-accent">PRO</span>
-            </motion.h1>
-          )}
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+            <button onClick={() => setActiveTab('floorplan')} className={cn("transition-colors", activeTab === 'floorplan' ? "text-white" : "text-text-secondary hover:text-white")}>Masalar</button>
+            <button onClick={() => setActiveTab('menu')} className={cn("transition-colors", activeTab === 'menu' ? "text-white" : "text-text-secondary hover:text-white")}>Menü</button>
+            <button onClick={() => setActiveTab('staff')} className={cn("transition-colors", activeTab === 'staff' ? "text-white" : "text-text-secondary hover:text-white")}>Personel</button>
+            <button onClick={() => setActiveTab('dashboard')} className={cn("transition-colors", activeTab === 'dashboard' ? "text-white" : "text-text-secondary hover:text-white")}>Raporlar</button>
+          </nav>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2 mt-4">
-          <SidebarItem 
-            icon={LayoutDashboard} 
-            label={isSidebarOpen ? "Dashboard" : ""} 
-            active={activeTab === 'dashboard'} 
-            onClick={() => setActiveTab('dashboard')} 
-          />
-          <SidebarItem 
-            icon={MapIcon} 
-            label={isSidebarOpen ? "Masa Düzeni" : ""} 
-            active={activeTab === 'floorplan'} 
-            onClick={() => setActiveTab('floorplan')} 
-          />
-          <SidebarItem 
-            icon={UtensilsCrossed} 
-            label={isSidebarOpen ? "Menü Kataloğu" : ""} 
-            active={activeTab === 'menu'} 
-            onClick={() => setActiveTab('menu')} 
-          />
-          <SidebarItem 
-            icon={Users} 
-            label={isSidebarOpen ? "Personel" : ""} 
-            active={activeTab === 'staff'} 
-            onClick={() => setActiveTab('staff')} 
-          />
-          <SidebarItem 
-            icon={Package} 
-            label={isSidebarOpen ? "Stok Takibi" : ""} 
-            active={activeTab === 'inventory'} 
-            onClick={() => setActiveTab('inventory')} 
-          />
-        </nav>
-
-        <div className="p-4 border-t border-border space-y-2">
-          <SidebarItem 
-            icon={Settings} 
-            label={isSidebarOpen ? "Ayarlar" : ""} 
-            active={false} 
-            onClick={() => {}} 
-          />
-          <SidebarItem 
-            icon={LogOut} 
-            label={isSidebarOpen ? "Çıkış Yap" : ""} 
-            active={false} 
-            onClick={() => setCurrentStaff(null)} 
-          />
-        </div>
-      </motion.aside>
-
-      {/* Main Content */}
-      <main className="flex-1 min-w-0">
-        {/* Top Bar */}
-        <header className="glass sticky top-0 z-40 px-8 py-4 flex items-center justify-between border-b border-border">
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 hover:bg-surface rounded-lg transition-colors"
-            >
-              <ChevronRight className={cn("transition-transform", isSidebarOpen && "rotate-180")} />
-            </button>
-            <h2 className="text-xl font-bold">{getTitle()}</h2>
+        <div className="flex items-center gap-6">
+          <div className="hidden md:flex relative">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
+            <input
+              type="text"
+              placeholder="Masa ara..."
+              className="bg-[#0D0D0E] border border-border/50 rounded-full pl-10 pr-4 py-1.5 text-sm focus:outline-none focus:border-border text-white w-64 placeholder:text-zinc-600 transition-colors"
+            />
           </div>
+          <button className="relative">
+            <NotificationIcon />
+            <span className="absolute top-0 right-0 w-2 h-2 bg-white rounded-full" />
+          </button>
+          <button>
+            <SettingsIcon />
+          </button>
+          <button className="flex items-center justify-center w-8 h-8 bg-orange-200 rounded-full border-2 border-border overflow-hidden" onClick={() => setCurrentStaff(null)} title="Logout">
+            <img src={currentStaff.avatar || "https://i.pravatar.cc/150"} alt="Profile" className="w-full h-full object-cover" />
+          </button>
+        </div>
+      </header>
 
-          <div className="flex items-center gap-6">
-            <div className="hidden md:flex relative">
-              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
-              <input 
-                type="text" 
-                placeholder="Hızlı arama..." 
-                className="bg-surface border border-border rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-accent w-64"
-              />
+      <div className="flex flex-1 min-h-0">
+        {/* Sidebar */}
+        <aside className="w-64 bg-[#1A1A1C] border-r border-border flex flex-col py-6">
+          <div className="px-6 mb-8 flex items-center gap-3">
+            <div className="w-10 h-10 bg-[#3D5B66] rounded-full flex flex-col items-center justify-center">
+               <div className="w-6 h-1 bg-white/20 mb-1 rounded-full"/>
+               <div className="w-4 h-1 bg-white/40 rounded-full"/>
             </div>
-            <button className="relative p-2 hover:bg-surface rounded-lg transition-colors">
-              <Bell size={20} className="text-text-secondary" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-surface" />
-            </button>
-            <div className="flex items-center gap-3 pl-6 border-l border-border">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-bold">{currentStaff.name}</p>
-                <p className="text-[10px] text-text-secondary font-medium uppercase tracking-wider">{currentStaff.role === 'manager' ? 'Yönetici' : 'Garson'}</p>
-              </div>
-              <img 
-                src={currentStaff.avatar || "https://i.pravatar.cc/150"} 
-                alt="Profile" 
-                className="w-10 h-10 rounded-xl object-cover border-2 border-border"
-                referrerPolicy="no-referrer"
-              />
-              <button 
-                onClick={() => setCurrentStaff(null)}
-                className="p-2 hover:bg-surface rounded-lg transition-colors text-text-secondary"
-                title="Personel Değiştir"
+            <div>
+              <p className="font-bold text-white leading-tight">Ana Mutfak</p>
+              <p className="text-xs text-text-secondary">Vardiya: Sabah</p>
+            </div>
+          </div>
+          <nav className="flex-1 px-3 space-y-1">
+            <SidebarItem icon={LayoutDashboard} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
+            <SidebarItem icon={Package} label="Stok Takibi" active={activeTab === 'inventory'} onClick={() => setActiveTab('inventory')} />
+            <SidebarItem icon={Users} label="Rezervasyonlar" active={false} onClick={() => {}} />
+            <SidebarItem icon={TrendingUp} label="Analizler" active={false} onClick={() => {}} />
+          </nav>
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 min-w-0 bg-[#161618] overflow-y-auto">
+
+          {/* View Content */}
+          <div className="p-8 max-w-7xl mx-auto">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
               >
-                <LogOut size={18} />
-              </button>
-            </div>
+                {renderView()}
+              </motion.div>
+            </AnimatePresence>
           </div>
-        </header>
-
-        {/* View Content */}
-        <div className="p-8 max-w-7xl mx-auto">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              {renderView()}
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </main>
+        </main>
+      </div>
 
       <AnimatePresence>
         {toast && (
