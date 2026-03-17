@@ -167,6 +167,11 @@ export const updateInventoryItem = async (itemId: string, updates: Partial<Inven
   }
 };
 
+/**
+ * Adds a new staff member to the database.
+ * @param staffData The staff data without the ID.
+ * @returns The ID of the newly created staff member.
+ */
 export const addStaffMember = async (staffData: Omit<Staff, 'id'>) => {
   try {
     const staffRef = await addDoc(collection(db, 'staff'), {
