@@ -1,0 +1,103 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: tables
+    // Fields: id, name, status, capacity, currentOrderTotal, occupiedTime, section, x, y, type
+    //
+    // Collection: menu
+    // Fields: id, name, category, price, description, image, isAvailable
+    //
+    // Collection: orders
+    // Fields: id, tableId, items, total, status, createdAt
+    //
+    // Collection: staff
+    // Fields: id, name, role, status, lastActive, avatar, email
+    //
+    // Collection: inventory
+    // Fields: id, name, category, stock, unit, minStock, price
+    //
+    // Collection: sales
+    // Fields: id, tableId, tableName, total, paymentMethod, timestamp, itemsCount
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/staff/$(request.auth.uid)).data.role in ['admin', 'manager'] ||
+          (request.auth.token.email == "birkan.cloud@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isStaff() {
+      return isAuthenticated();
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function validString(field, maxLen) {
+      return request.resource.data[field] is string && request.resource.data[field].size() <= maxLen;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /staff/{staffId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /activity_logs/{logId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin();
+    }
+
+    match /tables/{tableId} {
+      allow read: if isAuthenticated();
+      allow create, delete: if isAdmin();
+      allow update: if isStaff();
+    }
+
+    match /menu/{itemId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /orders/{orderId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isStaff();
+      allow delete: if isAdmin();
+    }
+
+    match /inventory/{itemId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAdmin() || (isStaff() && get(/databases/$(database)/documents/staff/$(request.auth.uid)).data.role == 'chef');
+    }
+
+    match /sales/{saleId} {
+      allow read: if isAdmin();
+      allow create: if isStaff();
+      allow update, delete: if isAdmin();
+    }
+
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}

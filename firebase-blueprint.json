@@ -1,0 +1,118 @@
+{
+  "entities": {
+    "Table": {
+      "title": "Table",
+      "description": "A restaurant table",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "status": { "type": "string", "enum": ["free", "occupied", "bill-requested", "dirty"] },
+        "capacity": { "type": "integer" },
+        "currentOrderTotal": { "type": "number" },
+        "occupiedTime": { "type": "string" },
+        "section": { "type": "string" },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "type": { "type": "string", "enum": ["round", "square", "booth"] }
+      },
+      "required": ["id", "name", "status", "capacity", "section"]
+    },
+    "MenuItem": {
+      "title": "MenuItem",
+      "description": "A menu item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "price": { "type": "number" },
+        "description": { "type": "string" },
+        "image": { "type": "string" },
+        "isAvailable": { "type": "boolean" }
+      },
+      "required": ["id", "name", "category", "price", "isAvailable"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "An active order for a table",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "tableId": { "type": "string" },
+        "items": { "type": "array", "items": { "$ref": "OrderItem" } },
+        "total": { "type": "number" },
+        "status": { "type": "string", "enum": ["active", "completed", "cancelled"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "tableId", "status", "createdAt"]
+    },
+    "OrderItem": {
+      "title": "OrderItem",
+      "description": "An item within an order",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "menuItemId": { "type": "string" },
+        "name": { "type": "string" },
+        "quantity": { "type": "integer" },
+        "price": { "type": "number" },
+        "status": { "type": "string", "enum": ["new", "preparing", "ready", "served"] }
+      },
+      "required": ["id", "menuItemId", "name", "quantity", "price", "status"]
+    },
+    "Staff": {
+      "title": "Staff",
+      "description": "A staff member",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "waiter", "chef", "manager"] },
+        "status": { "type": "string", "enum": ["active", "on-break", "offline"] },
+        "lastActive": { "type": "string" },
+        "avatar": { "type": "string" },
+        "email": { "type": "string", "format": "email" }
+      },
+      "required": ["id", "name", "role", "status"]
+    },
+    "InventoryItem": {
+      "title": "InventoryItem",
+      "description": "An item in the inventory",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "stock": { "type": "number" },
+        "unit": { "type": "string" },
+        "minStock": { "type": "number" },
+        "price": { "type": "number" }
+      },
+      "required": ["id", "name", "category", "stock", "unit", "minStock"]
+    },
+    "Sale": {
+      "title": "Sale",
+      "description": "A completed sale record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "tableId": { "type": "string" },
+        "tableName": { "type": "string" },
+        "total": { "type": "number" },
+        "paymentMethod": { "type": "string", "enum": ["card", "cash"] },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "itemsCount": { "type": "integer" }
+      },
+      "required": ["id", "tableId", "total", "paymentMethod", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/tables": { "schema": "Table", "description": "Restaurant tables" },
+    "/menu": { "schema": "MenuItem", "description": "Menu items" },
+    "/orders": { "schema": "Order", "description": "Active and past orders" },
+    "/staff": { "schema": "Staff", "description": "Staff members" },
+    "/inventory": { "schema": "InventoryItem", "description": "Inventory items" },
+    "/sales": { "schema": "Sale", "description": "Completed sales" }
+  }
+}
