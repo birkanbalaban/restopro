@@ -1,5 +1,26 @@
 import { Table, Order, MenuItem, Staff, InventoryItem, SaleRecord, Reservation, Shift, OrderItem } from '../types';
 
+/**
+ * API Service - Frontend wrapper for Express backend API
+ * 
+ * All data operations flow through the local Express server running on port 3005.
+ * This ensures a single source of truth (SQLite database) and simplifies state management.
+ * 
+ * API Base URL: http://localhost:3005/api
+ * TODO: Move to environment variable (.env) in Phase 2
+ * 
+ * Available endpoints (as of Phase 1):
+ * - /tables - Table management (GET, POST, DELETE, status updates)
+ * - /menu - Menu items (GET, POST, PATCH, DELETE)
+ * - /orders - Order management (GET, POST, add items, status updates, transfers)
+ * - /sales - Sales records (POST, GET)
+ * - /staff - Staff management (GET, POST, PATCH, DELETE)
+ * - /shifts - Shift scheduling (GET, POST, DELETE)
+ * - /reservations - Reservation management (GET, POST, PATCH, status)
+ * - /inventory - Inventory tracking (GET, POST, PATCH, DELETE, stock updates)
+ * - /seed - Initialize demo data (POST)
+ */
+
 const API_BASE = 'http://localhost:3005/api';
 
 /**

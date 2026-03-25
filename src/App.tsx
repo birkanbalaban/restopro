@@ -161,10 +161,11 @@ export default function App() {
         <div className="fixed bottom-8 right-8 z-[200]">
           <button
             onClick={() => {
-              // Local seed call
-              fetch('http://localhost:3005/api/seed', { method: 'POST' })
+              // Seed demo data via API service
+              apiService.seed()
                 .then(() => fetchData())
-                .then(() => showToast('Demo verileri yüklendi.'));
+                .then(() => showToast('Demo verileri yüklendi.'))
+                .catch(() => showToast('Demo veri yükleme başarısız', 'error'));
             }}
             className="bg-white/5 hover:bg-white/10 text-white/20 hover:text-white/60 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/5 transition-all"
           >
