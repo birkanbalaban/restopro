@@ -1,0 +1,267 @@
+# Codebase Structure
+
+**Analysis Date:** 2025-03-25
+
+## Directory Layout
+
+```
+restopro/
+├── src/                          # Frontend React application
+│   ├── components/               # Reusable UI components
+│   │   ├── layout/              # Layout components
+│   │   │   └── SidebarItem.tsx  # Sidebar navigation item
+│   │   └── shared/              # Shared UI components
+│   │       └── Toast.tsx        # Toast notification
+│   ├── views/                   # Full-page view components
+│   │   ├── FloorPlan/           # Main POS floor plan with order management
+│   │   │   ├── index.tsx        # Main floor plan view (1003 lines)
+│   │   │   ├── MenuSelector.tsx # Menu item selection modal
+│   │   │   ├── TableCard.tsx    # Individual table UI card
+│   │   │   └── DraftSidebar.tsx # Draft order sidebar
+│   │   ├── FloorPlanView/       # Legacy floor plan folder (may be unused)
+│   │   ├── DashboardView.tsx    # Sales analytics dashboard (322 lines)
+│   │   ├── MenuView.tsx         # Menu management interface (595 lines)
+│   │   ├── KitchenView.tsx      # Kitchen order display (236 lines)
+│   │   ├── InventoryView.tsx    # Stock management (502 lines)
+│   │   ├── StaffView.tsx        # Staff and shift management (452 lines)
+│   │   ├── Reservations.tsx     # Reservation management (285 lines)
+│   │   ├── SettingsView.tsx     # Printer settings (265 lines)
+│   │   └── KeypadLogin.tsx      # PIN-based login (155 lines)
+│   ├── hooks/                   # Custom React hooks
+│   │   └── usePrinters.ts       # Printer configuration hook
+│   ├── services/                # API and socket communication
+│   │   ├── apiService.ts        # REST API client
+│   │   └── socketService.ts     # Socket.io wrapper
+│   ├── types.ts                 # TypeScript interfaces (157 lines)
+│   ├── constants.ts             # Mock data and defaults (84 lines)
+│   ├── utils.ts                 # Utility functions
+│   ├── App.tsx                  # Root component (331 lines)
+│   ├── main.tsx                 # React DOM entry point
+│   └── index.css                # Global styles (Tailwind)
+│
+├── server/                       # Backend Express application
+│   ├── src/
+│   │   ├── index.ts            # Express server & API routes (513 lines)
+│   │   └── db.ts               # SQLite schema & seed (175 lines)
+│   └── data/
+│       └── cafe.db             # SQLite database file (generated)
+│
+├── dist/                        # Vite build output (generated)
+├── node_modules/               # Dependencies (generated)
+│
+├── docs/                        # Documentation
+├── .planning/                   # GSD mapping directory
+│
+├── package.json                 # Project dependencies
+├── tsconfig.json                # TypeScript configuration
+├── vite.config.ts               # Vite build configuration
+├── firestore.rules              # Firebase rules (legacy?)
+├── firebase-blueprint.json      # Firebase config (legacy?)
+├── index.html                   # HTML entry point
+└── README.md                    # Project documentation
+```
+
+## Directory Purposes
+
+**src/:**
+- Purpose: All frontend React application code
+- Contains: Components, views, hooks, services, types, utilities
+- Entry point: `main.tsx` (renders App.tsx to #root)
+- Compiled by: Vite to `dist/`
+
+**src/components/:**
+- Purpose: Reusable UI components, not full pages
+- Contains: Layout (sidebar) and shared (toast) components
+- Pattern: Small, focused components with prop-based configuration
+- Size: 2 files only (underdeveloped component library)
+
+**src/views/:**
+- Purpose: Full-page/modal view components for different sections
+- Contains: 9 different views for different features
+- Largest file: `FloorPlan/index.tsx` (1003 lines - monolithic)
+- Pattern: Views receive data and callbacks via props from App.tsx
+- No router: Tab-based navigation in App.tsx instead of React Router
+
+**src/hooks/:**
+- Purpose: Custom React hooks for reusable logic
+- Contains: 1 hook for printer configuration management
+- Pattern: Uses localStorage for persistence
+- Scope: Very limited (only 1 hook, could expand)
+
+**src/services/:**
+- Purpose: External communication abstraction
+- Contains: API client and Socket.io wrapper
+- Pattern: Singleton service exports with typed methods
+- Type safety: Full TypeScript support with generic typing
+
+**server/:**
+- Purpose: Backend Express.js application with SQLite
+- Contains: All API endpoints and database logic
+- Structure: Monolithic (all routes in single index.ts file)
+- Database: SQLite for local persistence (no migration system)
+
+**server/src/:**
+- `index.ts`: 40+ API route handlers + Socket.io event broadcasting
+- `db.ts`: Database initialization, schema, and seed function
+
+**server/data/:**
+- `cafe.db`: SQLite database file (auto-created on first run)
+- Committed: Yes (contains seed data)
+- Persistence: File-based local storage
+
+**dist/:**
+- Purpose: Vite build output
+- Contains: Compiled JS, CSS, assets
+- Committed: No (in .gitignore)
+- Generated by: `npm run build`
+
+## Key File Locations
+
+**Entry Points:**
+
+- `src/main.tsx` - Frontend app entry point (11 lines, creates React root)
+- `src/App.tsx` - Root component, handles auth, state, routing (331 lines)
+- `index.html` - HTML shell with `<div id="root">` container
+- `server/src/index.ts` - Backend server entry point, all API routes (513 lines)
+
+**Configuration:**
+
+- `vite.config.ts` - Vite build config with Tailwind and React plugins
+- `tsconfig.json` - TypeScript compiler options, path alias `@/*`
+- `package.json` - Dependencies and scripts (npm run dev, build, server)
+- `.env.example` - Environment variable template (GEMINI_API_KEY mentioned)
+
+**Core Logic:**
+
+- `src/types.ts` - All data model interfaces
+- `src/constants.ts` - Mock data (TABLES, MENU_ITEMS, STAFF, INVENTORY, RESERVATIONS)
+- `src/services/apiService.ts` - REST API wrapper with all CRUD methods
+- `src/services/socketService.ts` - Socket.io event handling
+- `server/src/db.ts` - Database schema and seed data loading
+
+**Testing:**
+
+- Not found: No test files exist in the codebase
+- Config: `vitest` listed in devDependencies but no tests written
+
+## Naming Conventions
+
+**Files:**
+
+- **Views:** PascalCase with "View" suffix (e.g., `DashboardView.tsx`, `FloorPlanView`)
+  - Exception: FloorPlan subfolder uses index.tsx pattern
+- **Components:** PascalCase (e.g., `Toast.tsx`, `SidebarItem.tsx`)
+- **Hooks:** camelCase with "use" prefix (e.g., `usePrinters.ts`)
+- **Services:** camelCase with "Service" suffix (e.g., `apiService.ts`, `socketService.ts`)
+- **Utilities:** camelCase (e.g., `utils.ts`, `types.ts`, `constants.ts`)
+
+**Directories:**
+
+- **Components:** PascalCase for category folders (`layout/`, `shared/`)
+- **Views:** PascalCase (e.g., `FloorPlan/`)
+- **Services:** lowercase, plural for collections (e.g., `src/services/`, `server/src/`)
+- **Data:** lowercase, plural (e.g., `server/data/`)
+
+**TypeScript Types:**
+
+- **Interfaces:** PascalCase (e.g., `Table`, `Order`, `MenuItem`, `PrinterConfig`)
+- **Functions:** camelCase (e.g., `createOrder()`, `updateTableStatus()`)
+- **Variables:** camelCase (e.g., `currentStaff`, `activeTab`, `printers`)
+- **Constants:** UPPER_CASE for data arrays (e.g., `TABLES`, `MENU_ITEMS`, `STAFF`)
+
+**API Endpoints:**
+
+- Pattern: `/api/{resource}/{id?}/{action?}`
+- Examples:
+  - `GET /api/tables` - List all tables
+  - `POST /api/tables/:id/status` - Update table status
+  - `POST /api/orders/:id/items` - Add items to order
+  - `POST /api/sales` - Complete sale
+
+## Where to Add New Code
+
+**New Feature (e.g., loyalty program):**
+
+1. **Add types** → `src/types.ts` (new interface like `Loyalty`)
+2. **Add API methods** → `src/services/apiService.ts` (GET, POST, PATCH, DELETE)
+3. **Create view** → `src/views/LoyaltyView.tsx` (new component)
+4. **Add state** → `src/App.tsx` (new useState for loyalty data)
+5. **Fetch on mount** → `src/App.tsx` useEffect
+6. **Add socket listener** → `src/App.tsx` (e.g., `socketService.on('loyalty_updated', ...)`)
+7. **Add navigation** → `src/App.tsx` sidebar and renderView switch
+8. **Backend routes** → `server/src/index.ts` (GET, POST, PATCH, DELETE endpoints)
+9. **Database schema** → `server/src/db.ts` (CREATE TABLE IF NOT EXISTS)
+10. **Seed data** → `src/constants.ts` (add default data) and `server/src/index.ts` seedDB call
+
+**New Component (reusable UI):**
+
+- **Small/shared:** `src/components/shared/` (e.g., `Button.tsx`, `Modal.tsx`)
+- **Layout:** `src/components/layout/` (e.g., `Header.tsx`, `Footer.tsx`)
+- **Complex/domain:** Nest in views folder (e.g., `src/views/FloorPlan/MenuSelector.tsx`)
+
+**New Hook:**
+
+- Location: `src/hooks/{hookName}.ts`
+- Pattern: Export named function starting with "use"
+- Example: `export function useOrders() { ... }`
+
+**Utility Functions:**
+
+- Global utilities: `src/utils.ts` (currently only `cn()` function)
+- Feature-specific: Create `src/utils/{featureName}.ts` if needed
+
+**Backend Routes:**
+
+- Location: `server/src/index.ts` (all routes in one file)
+- Pattern: `app.get()`, `app.post()`, `app.patch()`, `app.delete()`
+- Broadcasting: Call `broadcast(event, data)` for Socket.io sync
+- Example structure:
+  ```typescript
+  app.post('/api/loyalty/:id/points', (req, res) => {
+    const { id } = req.params;
+    const { points } = req.body;
+    try {
+      db.prepare('UPDATE loyalty SET points = ? WHERE id = ?').run(points, id);
+      broadcast('loyalty_updated');
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+  ```
+
+## Special Directories
+
+**dist/:**
+- Purpose: Production build output
+- Generated: Yes (by `npm run build`)
+- Committed: No (in .gitignore)
+- Contents: Compiled JS, CSS, static assets
+
+**node_modules/:**
+- Purpose: Installed dependencies
+- Generated: Yes (by `npm install`)
+- Committed: No (in .gitignore)
+- Size: Large (React, Vite, Express, etc.)
+
+**server/data/:**
+- Purpose: SQLite database storage
+- Generated: Yes (auto-created on first server run)
+- Committed: Partially (cafe.db template may be committed)
+- Contents: SQLite database file with tables and seed data
+
+**.planning/:**
+- Purpose: GSD (Gemini Software Development) planning documents
+- Generated: By GSD commands
+- Committed: Yes
+- Contents: ARCHITECTURE.md, STRUCTURE.md, CONCERNS.md, etc.
+
+**docs/:**
+- Purpose: Project documentation
+- Generated: No (static files)
+- Committed: Yes
+- Contents: Additional docs if any exist
+
+---
+
+*Structure analysis: 2025-03-25*
