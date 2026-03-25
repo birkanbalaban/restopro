@@ -217,11 +217,9 @@ app.post('/api/orders/:id/items', (req, res) => {
 app.post('/api/orders/:id/items/:itemId/status', (req, res) => {
     const { id, itemId } = req.params;
     const { status } = req.body;
-    console.log(`[Kitchen] Item ${itemId} in order ${id} status update to: ${status}`);
     try {
         const item = db.prepare('SELECT statusTimestamps FROM order_items WHERE id = ?').get(itemId) as any;
         if (!item) {
-            console.error(`[Kitchen] Item ${itemId} not found`);
             return res.status(404).json({ error: 'Item not found' });
         }
         const timestampsStr = item.statusTimestamps;
@@ -229,21 +227,17 @@ app.post('/api/orders/:id/items/:itemId/status', (req, res) => {
         try {
             timestamps = JSON.parse(timestampsStr || '{}');
         } catch (e) {
-            console.error(`[Kitchen] Failed to parse timestamps for item ${itemId}:`, timestampsStr);
             timestamps = {};
         }
 
         timestamps[status] = Date.now();
 
-        console.log(`[Kitchen] Updating item ${itemId} to ${status}`);
         db.prepare('UPDATE order_items SET status = ?, statusTimestamps = ? WHERE id = ?')
             .run(status, JSON.stringify(timestamps), itemId);
 
-        console.log(`[Kitchen] Item ${itemId} updated successfully`);
         broadcast('orders_updated');
         res.json({ success: true });
     } catch (error) {
-        console.error(`[Kitchen] Error updating status for item ${itemId}:`, error);
         res.status(500).json({ error: (error as Error).message });
     }
 });
@@ -504,10 +498,10 @@ app.post('/api/inventory/:id/stock', (req, res) => {
 
 // --- Socket.io ---
 io.on('connection', (socket) => {
-    console.log('Client connected:', socket.id);
+    // Client connection handler - socket ID available if needed
 });
 
 const PORT = process.env.PORT || 3005;
 httpServer.listen(PORT, () => {
-    console.log(`RestoPro Local Server running on port ${PORT}`);
+    // Server started - PORT is available via environment
 });
