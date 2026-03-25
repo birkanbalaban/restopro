@@ -1,4 +1,35 @@
-export type TableStatus = 'free' | 'occupied' | 'bill-requested' | 'dirty';
+export type TableStatus = 'free' | 'occupied' | 'bill-requested' | 'reserved';
+
+/**
+ * User type for staff/employee authentication and tracking.
+ * Used throughout the app for staff login, order assignment, and activity logging.
+ */
+export interface User {
+  id: string;
+  name: string;
+  pin?: string;
+  role?: 'admin' | 'waiter' | 'chef' | 'manager';
+}
+
+// Printer configuration - customizable per restaurant
+export interface PrinterConfig {
+  id: string;        // unique slug, e.g. 'kitchen', 'bar', 'kasiyer'
+  name: string;      // display name, e.g. 'Mutfak Yazıcısı'
+  color: string;     // tailwind color token e.g. 'red' | 'amber' | 'blue'
+}
+
+export interface Reservation {
+  id: string;
+  customerName: string;
+  phone: string;
+  date: string; // YYYY-MM-DD
+  time: string; // HH:MM
+  guestCount: number;
+  tableId: string | null;
+  status: 'pending' | 'confirmed' | 'seated' | 'cancelled';
+  notes?: string;
+  createdAt: any;
+}
 
 export interface Table {
   id: string;
@@ -10,8 +41,9 @@ export interface Table {
   section: string;
   x: number;
   y: number;
-  type: 'round' | 'square' | 'booth';
   activeOrderId?: string;
+  waiterId?: string;
+  waiterName?: string;
 }
 
 export interface Order {
@@ -20,6 +52,11 @@ export interface Order {
   items: OrderItem[];
   total: number;
   status: 'active' | 'completed' | 'cancelled';
+  note?: string;
+  waiterId?: string;
+  waiterName?: string;
+  discountAmount?: number;
+  discountPercent?: number;
   createdAt: any;
 }
 
@@ -44,6 +81,7 @@ export interface MenuItem {
   image: string;
   isAvailable: boolean;
   modifierGroups?: ModifierGroup[];
+  printer?: string; // printer id from PrinterConfig
 }
 
 export interface OrderItem {
@@ -51,12 +89,21 @@ export interface OrderItem {
   menuItemId: string;
   name: string;
   quantity: number;
+  paidQuantity?: number; // Added for tracking partially paid items
   price: number;
-  status: 'new' | 'preparing' | 'ready' | 'served';
+  status: 'new' | 'preparing' | 'ready' | 'served' | 'paid';
   selectedModifiers?: {
     groupName: string;
     option: ModifierOption;
   }[];
+  note?: string;
+  printer?: string; // printer id
+  statusTimestamps?: {
+    new?: number;
+    preparing?: number;
+    ready?: number;
+    served?: number;
+  };
 }
 
 export interface Staff {
@@ -77,16 +124,29 @@ export interface InventoryItem {
   unit: string;
   minStock: number;
   price: number;
+  /** External supplier name (e.g. 'Şef Pasta A.Ş.') */
+  supplier?: string;
+  /** Whether this item is sourced from an external vendor */
+  isExternal?: boolean;
+  /** Expiration/best-before date as ISO date string YYYY-MM-DD */
+  expiresAt?: string;
+  /** Batch / lot note (e.g. delivery batch info) */
+  batchNote?: string;
 }
 
 export interface SaleRecord {
   id: string;
   tableId: string;
   tableName: string;
+  subtotal: number;
+  discountTotal: number;
   total: number;
   paymentMethod: 'card' | 'cash';
   timestamp: string;
   itemsCount: number;
+  items?: OrderItem[];
+  createdAt?: any;
+  timestampObj?: any;
 }
 
 export interface ActivityLog {
@@ -95,4 +155,14 @@ export interface ActivityLog {
   staffName: string;
   action: string;
   timestamp: any;
+}
+
+export interface Shift {
+  id: string;
+  staffId: string;
+  staffName: string;
+  dayIndex: number; // 0 for Monday, 6 for Sunday
+  startTime: string; // HH:MM
+  endTime: string;   // HH:MM
+  type: 'morning' | 'evening' | 'full';
 }
