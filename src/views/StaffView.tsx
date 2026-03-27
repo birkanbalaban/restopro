@@ -15,10 +15,11 @@ export const StaffView = ({ staff, shifts, logs, showToast, isManager, setStaff,
   setShifts?: React.Dispatch<React.SetStateAction<Shift[]>>,
   user?: any
 }) => {
-  const [activeView, setActiveView] = useState<'list' | 'schedule'>('list');
+  const [activeView, setActiveView] = useState<'list' | 'schedule' | 'timeline'>('list');
   const [isAddingStaff, setIsAddingStaff] = useState(false);
   const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
   const [roleFilter, setRoleFilter] = useState<'all' | Staff['role']>('all');
+  const [selectedDay, setSelectedDay] = useState<number>(new Date().getDay() === 0 ? 6 : new Date().getDay() - 1);
 
   const [isAddingShift, setIsAddingShift] = useState(false);
   const [newShift, setNewShift] = useState<Omit<Shift, 'id'>>({
@@ -35,7 +36,8 @@ export const StaffView = ({ staff, shifts, logs, showToast, isManager, setStaff,
     role: 'waiter',
     status: 'active',
     avatar: '',
-    pin: ''
+    pin: '',
+    color: '#9d7bfa'
   });
 
   const days = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
@@ -45,12 +47,25 @@ export const StaffView = ({ staff, shifts, logs, showToast, isManager, setStaff,
     { id: 'full', label: 'Tam Gün', icon: Sun, color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20' },
   ];
 
+  const STAFF_COLORS = [
+    '#9d7bfa', // accent
+    '#f43f5e', // rose
+    '#f59e0b', // amber
+    '#10b981', // emerald
+    '#3b82f6', // blue
+    '#8b5cf6', // violet
+    '#ec4899', // pink
+    '#f97316', // orange
+    '#06b6d4', // cyan
+    '#84cc16', // lime
+  ];
+
   /* Handlers */
   const handleAddStaff = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isManager) return;
     try {
-      await firebaseService.addStaff(newStaff as any);
+      await firebaseService.addStaff({ ...newStaff, color: getStaffColor(newStaff.name) } as any);
       showToast(`${newStaff.name} personele eklendi.`, 'success');
       setIsAddingStaff(false);
       setNewStaff({ name: '', role: 'waiter', status: 'active', avatar: '', pin: '' });
@@ -96,6 +111,27 @@ export const StaffView = ({ staff, shifts, logs, showToast, isManager, setStaff,
     await firebaseService.deleteShift(id);
     showToast('Vardiya kaldırıldı.', 'success');
   };
+
+  /* role config */
+  const getStaffColor = (name: string) => {
+    const colors = [
+      '#9d7bfa', // accent
+      '#f43f5e', // rose
+      '#f59e0b', // amber
+      '#10b981', // emerald
+      '#3b82f6', // blue
+      '#8b5cf6', // violet
+      '#ec4899', // pink
+      '#f97316', // orange
+    ];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+  };
+
+  const getDayLabel = (index: number) => days[index];
 
   /* role config */
   const roleConfig: Record<Staff['role'], { label: string; color: string; bg: string; border: string; gradient: string }> = {
@@ -157,6 +193,15 @@ export const StaffView = ({ staff, shifts, logs, showToast, isManager, setStaff,
             )}
           >
             <Calendar size={16} /> Haftalık Çizelge
+          </button>
+          <button
+            onClick={() => setActiveView('timeline')}
+            className={cn(
+              "px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
+              activeView === 'timeline' ? "bg-accent text-white shadow-xl" : "text-text-secondary hover:bg-white/5"
+            )}
+          >
+            <Clock size={16} /> Zaman Çizelgesi
           </button>
         </div>
 
@@ -232,7 +277,7 @@ export const StaffView = ({ staff, shifts, logs, showToast, isManager, setStaff,
               })}
             </div>
           </motion.div>
-        ) : (
+        ) : activeView === 'schedule' ? (
           <motion.div key="schedule" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
             <div className="overflow-x-auto pb-4">
               <div className="grid grid-cols-7 min-w-[1000px] gap-4">
@@ -248,7 +293,6 @@ export const StaffView = ({ staff, shifts, logs, showToast, isManager, setStaff,
                         {dayShifts.map(s => {
                           const type = shiftTypes.find(t => t.id === s.type) || shiftTypes[0];
                           const Icon = type.icon;
-                          const rc = roleConfig[staff.find(st => st.id === s.staffId)?.role || 'waiter'];
 
                           return (
                             <motion.div
@@ -291,7 +335,117 @@ export const StaffView = ({ staff, shifts, logs, showToast, isManager, setStaff,
               </div>
             </div>
           </motion.div>
-        )}
+        ) : (
+          <motion.div key="timeline" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="space-y-8">
+            {/* Day Selector Tabs */}
+            <div className="flex bg-[#252528] p-1.5 rounded-2xl border border-border/50 self-start overflow-x-auto no-scrollbar gap-1">
+              {days.map((day, idx) => (
+                <button
+                  key={day}
+                  onClick={() => setSelectedDay(idx)}
+                  className={cn(
+                    "px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                    selectedDay === idx ? "bg-accent text-white shadow-lg" : "text-text-secondary hover:text-white"
+                  )}
+                >
+                  {day}
+                </button>
+              ))}
+            </div>
+
+            <div className="glass rounded-[40px] p-10 border border-white/5 shadow-2xl overflow-hidden relative">
+              <div className="flex items-center justify-between mb-10">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-accent/20 flex items-center justify-center border border-accent/30 text-accent">
+                    <Clock size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-black tracking-tighter uppercase">{days[selectedDay]} Vardiya Planı</h3>
+                    <p className="text-[10px] font-bold text-text-secondary tracking-[0.2em] uppercase opacity-50">Personel bazlı saatlik kapsama</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative min-w-[1000px]">
+                {/* Time Header */}
+                <div className="grid grid-cols-[180px_1fr] mb-4">
+                  <div />
+                  <div className="flex justify-between px-2 text-[10px] font-black text-text-secondary/40 tracking-[0.2em]">
+                    {Array.from({ length: 17 }).map((_, i) => (
+                      <span key={i} className="w-0 flex justify-center">{String(i + 8).padStart(2, '0')}</span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {staff.map((person) => {
+                    const personShifts = shifts.filter(s => s.staffId === person.id && s.dayIndex === selectedDay);
+                    const personColor = person.color || getStaffColor(person.name);
+
+                    return (
+                      <div key={person.id} className="grid grid-cols-[180px_1fr] items-center gap-6 group">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs text-white shrink-0 shadow-lg"
+                            style={{ backgroundColor: personColor }}
+                          >
+                            {getInitials(person.name)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-sm truncate group-hover:text-accent transition-colors">{person.name}</p>
+                            <p className="text-[9px] font-black uppercase opacity-30 tracking-tighter">{roleConfig[person.role].label}</p>
+                          </div>
+                        </div>
+
+                        <div className="h-14 bg-white/[0.02] rounded-2xl relative border border-white/5 shadow-inner group-hover:bg-white/[0.04] transition-all">
+                          {/* Hour grid lines */}
+                          {Array.from({ length: 16 }).map((_, i) => (
+                            <div key={i} className="absolute h-full border-r border-white-[0.03] top-0 pointer-events-none" style={{ left: `${(i + 1) * (100 / 16)}%` }} />
+                          ))}
+
+                          {/* Shifts */}
+                          {personShifts.map((s) => {
+                            const [sH, sM] = s.startTime.split(':').map(Number);
+                            const [eH, eM] = s.endTime.split(':').map(Number);
+                            const start = ((sH + sM / 60) - 8) * (100 / 16);
+                            const end = ((eH + eM / 60) - 8) * (100 / 16);
+
+                            return (
+                              <motion.div
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                key={s.id}
+                                className="absolute h-10 top-2 rounded-xl flex flex-col justify-center px-4 shadow-2xl transition-all hover:z-20 hover:scale-[1.02] border"
+                                style={{
+                                  left: `${Math.max(0, start)}%`,
+                                  width: `${Math.max(2, end - start)}%`,
+                                  backgroundColor: `${personColor}20`,
+                                  borderColor: `${personColor}40`,
+                                  color: personColor
+                                }}
+                              >
+                                <span className="text-[10px] font-black uppercase tracking-tighter flex items-center gap-1">
+                                  {s.startTime} - {s.endTime}
+                                </span>
+                              </motion.div>
+                            );
+                          })}
+
+                          {personShifts.length === 0 && (
+                            <div className="absolute inset-0 flex items-center px-8 opacity-10 italic text-[10px] font-bold tracking-widest uppercase">
+                              Vardiya Yok
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )
+        }
       </AnimatePresence>
 
       {/* Modals */}
@@ -334,6 +488,23 @@ export const StaffView = ({ staff, shifts, logs, showToast, isManager, setStaff,
                     onChange={(e) => setNewStaff({ ...newStaff, pin: e.target.value })}
                     className="w-full bg-surface/50 border-2 border-border/50 rounded-2xl px-6 py-4 focus:outline-none focus:border-accent font-black tracking-[0.5em] text-center"
                     placeholder="••••" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest">Çizelge Rengi</label>
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {STAFF_COLORS.map(c => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setNewStaff({ ...newStaff, color: c })}
+                        className={cn(
+                          "w-8 h-8 rounded-full border-2 transition-all",
+                          newStaff.color === c ? "border-white scale-110 shadow-lg" : "border-transparent opacity-40 hover:opacity-100"
+                        )}
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
+                  </div>
                 </div>
                 <div className="pt-2 flex gap-4">
                   <button type="button" onClick={() => setIsAddingStaff(false)} className="flex-1 glass py-4 rounded-[28px] font-black uppercase tracking-widest text-xs">İptal</button>
@@ -438,6 +609,23 @@ export const StaffView = ({ staff, shifts, logs, showToast, isManager, setStaff,
                   <input required type="password" maxLength={4} value={editingStaff.pin}
                     onChange={(e) => setEditingStaff({ ...editingStaff, pin: e.target.value })}
                     className="w-full bg-surface/50 border-2 border-border/50 rounded-2xl px-6 py-4 focus:outline-none focus:border-accent font-black tracking-[0.5em] text-center" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest">Çizelge Rengi</label>
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {STAFF_COLORS.map(c => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setEditingStaff({ ...editingStaff, color: c })}
+                        className={cn(
+                          "w-8 h-8 rounded-full border-2 transition-all",
+                          editingStaff.color === c ? "border-white scale-110 shadow-lg" : "border-transparent opacity-40 hover:opacity-100"
+                        )}
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
+                  </div>
                 </div>
                 <div className="pt-2 flex gap-4">
                   <button type="button" onClick={() => setEditingStaff(null)} className="flex-1 glass py-4 rounded-[28px] font-black uppercase tracking-widest text-xs">İptal</button>

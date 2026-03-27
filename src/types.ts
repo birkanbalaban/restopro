@@ -114,6 +114,7 @@ export interface Staff {
   lastActive: string;
   avatar: string;
   pin: string;
+  color?: string; // Hex color for scheduling
 }
 
 export interface InventoryItem {

@@ -98,7 +98,7 @@ export const DashboardView = ({ sales, menuItems }: { sales: SaleRecord[], menuI
             <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 overflow-x-auto pb-4 border-b border-border/20 no-scrollbar">
                 <div className="flex flex-col gap-2 shrink-0">
                     <div className="flex items-center gap-3">
-                        <h2 className="text-2xl font-bold font-['Outfit'] tracking-tight">Raporlar & Analizler</h2>
+                        <h2 className="text-2xl font-bold tracking-tight">Raporlar & Analizler</h2>
                     </div>
                     <p className="text-text-secondary text-xs font-medium print:hidden">İşletmenizin gerçek satış verilerine dayalı performans analizi.</p>
                 </div>
