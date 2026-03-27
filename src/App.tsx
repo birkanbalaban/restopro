@@ -11,14 +11,14 @@ import {
   Search,
   Shield,
   ChevronRight,
-  Calendar
+  Calendar,
+  Utensils
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from './utils';
 
-// API & Socket Services
-import { apiService } from './services/apiService';
-import { socketService } from './services/socketService';
+// Firebase Services
+import { firebaseService } from './services/firebaseService';
 import { Toast } from './components/shared/Toast';
 
 // Types & Constants
@@ -64,13 +64,13 @@ export default function App() {
   const fetchData = async () => {
     try {
       const [t, m, s, i, r, sl, sh] = await Promise.all([
-        apiService.getTables(),
-        apiService.getMenuItems(),
-        apiService.getStaff(),
-        apiService.getInventory(),
-        apiService.getReservations(),
-        apiService.getSales(),
-        apiService.getShifts()
+        firebaseService.getTables(),
+        firebaseService.getMenuItems(),
+        firebaseService.getStaff(),
+        firebaseService.getInventory(),
+        firebaseService.getReservations(),
+        firebaseService.getSales(),
+        firebaseService.getShifts()
       ]);
       setTables(t);
       setMenuItems(m);
@@ -80,12 +80,12 @@ export default function App() {
       setSales(sl);
       setShifts(sh);
     } catch (error) {
-      // Failed to fetch initial data - handle silently or show user-facing error
+      console.error('Firebase initial fetch failed:', error);
     }
   };
 
   const fetchOrders = () => {
-    return apiService.getOrders().then(o => {
+    return firebaseService.getOrders().then(o => {
       setOrders(o);
     });
   };
@@ -93,17 +93,27 @@ export default function App() {
   useEffect(() => {
     fetchData();
     fetchOrders();
-    socketService.connect();
 
-    socketService.on('table_updated', () => apiService.getTables().then(setTables));
-    socketService.on('orders_updated', fetchOrders);
-    socketService.on('staff_updated', () => apiService.getStaff().then(setStaff));
-    socketService.on('shifts_updated', () => apiService.getShifts().then(setShifts));
-    socketService.on('inventory_updated', () => apiService.getInventory().then(setInventory));
-    socketService.on('sales_updated', () => apiService.getSales().then(setSales));
-    socketService.on('reservations_updated', () => apiService.getReservations().then(setReservations));
+    // Real-time subscriptions for all collections
+    const unsubTables = firebaseService.subscribeTables(setTables, (err) => showToast(`Tables Error: ${err.message}`, 'error'));
+    const unsubOrders = firebaseService.subscribeOrders(setOrders, (err) => showToast(`Orders Error: ${err.message}`, 'error'));
+    const unsubMenu = firebaseService.subscribeMenu(setMenuItems, (err) => showToast(`Menu Error: ${err.message}`, 'error'));
+    const unsubStaff = firebaseService.subscribeStaff(setStaff, (err) => showToast(`Staff Error: ${err.message}`, 'error'));
+    const unsubInventory = firebaseService.subscribeInventory(setInventory, (err) => showToast(`Inventory Error: ${err.message}`, 'error'));
+    const unsubReservations = firebaseService.subscribeReservations(setReservations, (err) => showToast(`Reservations Error: ${err.message}`, 'error'));
+    const unsubShifts = firebaseService.subscribeShifts(setShifts, (err) => showToast(`Shifts Error: ${err.message}`, 'error'));
 
     setIsLoading(false);
+
+    return () => {
+      unsubTables();
+      unsubOrders();
+      unsubMenu();
+      unsubStaff();
+      unsubInventory();
+      unsubReservations();
+      unsubShifts();
+    };
   }, []);
 
   const handleLogout = () => {
@@ -161,11 +171,11 @@ export default function App() {
         <div className="fixed bottom-8 right-8 z-[200]">
           <button
             onClick={() => {
-              // Seed demo data via API service
-              apiService.seed()
+              // Seed demo data via Firebase
+              firebaseService.seed(TABLES, MENU_ITEMS, STAFF, INVENTORY)
                 .then(() => fetchData())
-                .then(() => showToast('Demo verileri yüklendi.'))
-                .catch(() => showToast('Demo veri yükleme başarısız', 'error'));
+                .then(() => showToast('Firebase demo verileri yüklendi.'))
+                .catch(() => showToast('Firebase veri yükleme başarısız', 'error'));
             }}
             className="bg-white/5 hover:bg-white/10 text-white/20 hover:text-white/60 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/5 transition-all"
           >
@@ -183,7 +193,21 @@ export default function App() {
       case 'dashboard':
         return <DashboardView sales={sales} menuItems={menuItems} />;
       case 'floorplan':
-        return <FloorPlanView tables={tables} menuItems={menuItems} orders={orders} showToast={showToast} isManager={isManager} user={null} setTables={setTables} setOrders={setOrders} setSales={setSales} currentStaff={currentStaff} staff={staff} />;
+        return <FloorPlanView
+          tables={tables}
+          menuItems={menuItems}
+          orders={orders}
+          showToast={showToast}
+          isManager={isManager}
+          user={null}
+          setTables={setTables}
+          setOrders={setOrders}
+          setSales={setSales}
+          currentStaff={currentStaff}
+          staff={staff}
+          setActiveTab={setActiveTab}
+          onLogout={() => setCurrentStaff(null)}
+        />;
       case 'kitchen':
         return <KitchenView orders={orders} user={null} setOrders={setOrders} />;
       case 'menu':
@@ -191,7 +215,7 @@ export default function App() {
       case 'inventory':
         return <InventoryView inventory={inventory} showToast={showToast} isManager={isManager} setInventory={setInventory} />;
       case 'reservations':
-        return <ReservationsView reservations={reservations} tables={tables} onAddReservation={(r: any) => apiService.addReservation(r)} showToast={showToast} setReservations={setReservations} user={null} />;
+        return <ReservationsView reservations={reservations} tables={tables} onAddReservation={(r: any) => firebaseService.addReservation(r)} showToast={showToast} setReservations={setReservations} user={null} />;
       case 'staff':
         return <StaffView staff={staff} logs={activityLogs} shifts={shifts} isManager={isManager} showToast={showToast} setStaff={setStaff} setShifts={setShifts} user={null} />;
       case 'settings':
@@ -237,7 +261,8 @@ export default function App() {
           {isManager && <SidebarItem icon={LayoutDashboard} label="Dashboard" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} collapsed={isSidebarCollapsed} />}
           <SidebarItem icon={MapIcon} label="Masalar" active={activeTab === 'floorplan'} onClick={() => setActiveTab('floorplan')} collapsed={isSidebarCollapsed} />
           <SidebarItem icon={ChefHat} label="Mutfak" active={activeTab === 'kitchen'} onClick={() => setActiveTab('kitchen')} collapsed={isSidebarCollapsed} />
-          {isManager && <SidebarItem icon={Package} label="Envanter" active={activeTab === 'inventory'} onClick={() => setActiveTab('inventory')} collapsed={isSidebarCollapsed} />}
+          <SidebarItem icon={Package} label="Envanter" active={activeTab === 'inventory'} onClick={() => setActiveTab('inventory')} collapsed={isSidebarCollapsed} />
+          {isManager && <SidebarItem icon={Utensils} label="Menü" active={activeTab === 'menu'} onClick={() => setActiveTab('menu')} collapsed={isSidebarCollapsed} />}
           <SidebarItem icon={Calendar} label="Rezervasyonlar" active={activeTab === 'reservations'} onClick={() => setActiveTab('reservations')} collapsed={isSidebarCollapsed} />
           {isManager && <SidebarItem icon={Users} label="Personel" active={activeTab === 'staff'} onClick={() => setActiveTab('staff')} collapsed={isSidebarCollapsed} />}
           {isManager && <SidebarItem icon={Settings} label="Ayarlar" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} collapsed={isSidebarCollapsed} />}

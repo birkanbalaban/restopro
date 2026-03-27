@@ -24,13 +24,13 @@ export const TABLES: Table[] = [
 
 // Sample menu items with pricing and modifiers
 export const MENU_ITEMS: MenuItem[] = [
-  { id: 'm1', name: 'Mercimek Çorbası', category: 'Başlangıçlar', price: 85, description: 'Geleneksel süzme mercimek çorbası, kıtır ekmek ile.', image: 'https://picsum.photos/seed/soup/400/300', isAvailable: true },
-  { id: 'm2', name: 'Adana Kebap', category: 'Ana Yemekler', price: 320, description: 'Zırh kıyması, közlenmiş biber ve domates ile.', image: 'https://picsum.photos/seed/kebab/400/300', isAvailable: true },
+  { id: 'm1', name: 'Mercimek Çorbası', category: 'Başlangıçlar', price: 85, description: 'Geleneksel süzme mercimek çorbası, kıtır ekmek ile.', image: 'https://picsum.photos/seed/soup/400/300', isAvailable: true, printer: 'kitchen' },
+  { id: 'm2', name: 'Adana Kebap', category: 'Ana Yemekler', price: 320, description: 'Zırh kıyması, közlenmiş biber ve domates ile.', image: 'https://picsum.photos/seed/kebab/400/300', isAvailable: true, printer: 'kitchen' },
   { id: 'm3', name: 'Beyti Sarma', category: 'Ana Yemekler', price: 350, description: 'Lavaş içerisinde özel soslu kebap, yoğurt ile.', image: 'https://picsum.photos/seed/beyti/400/300', isAvailable: true },
   { id: 'm4', name: 'Gavurdağı Salatası', category: 'Salatalar', price: 120, description: 'İnce kıyılmış sebzeler, ceviz ve nar ekşisi ile.', image: 'https://picsum.photos/seed/salad/400/300', isAvailable: true },
   { id: 'm5', name: 'Künefe', category: 'Tatlılar', price: 150, description: 'Sıcak servis edilen peynirli kadayıf tatlısı.', image: 'https://picsum.photos/seed/kunefe/400/300', isAvailable: true },
   { id: 'm6', name: 'Ayran', category: 'İçecekler', price: 35, description: 'Ev yapımı bol köpüklü ayran.', image: 'https://picsum.photos/seed/ayran/400/300', isAvailable: true },
-  { id: 'm7', name: 'Türk Kahvesi', category: 'İçecekler', price: 65, description: 'Geleneksel Türk kahvesi, lokum ile.', image: 'https://picsum.photos/seed/coffee/400/300', isAvailable: true },
+  { id: 'm7', name: 'Türk Kahvesi', category: 'İçecekler', price: 65, description: 'Geleneksel Türk kahvesi, lokum ile.', image: 'https://picsum.photos/seed/coffee/400/300', isAvailable: true, printer: 'bar' },
   {
     id: 'm8',
     name: 'Latte',
@@ -39,6 +39,7 @@ export const MENU_ITEMS: MenuItem[] = [
     description: 'Taze çekilmiş espresso ve sıcak süt.',
     image: 'https://picsum.photos/seed/latte/400/300',
     isAvailable: true,
+    printer: 'bar',
     modifierGroups: [
       {
         name: 'Süt Seçimi',

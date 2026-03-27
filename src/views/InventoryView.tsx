@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { PackageSearch, AlertCircle, Plus, Edit2, Trash2, X, Info, Search, Shield } from 'lucide-react';
 import { cn } from '../utils';
 import { InventoryItem } from '../types';
-import { apiService } from '../services/apiService';
+import { firebaseService } from '../services/firebaseService';
 
 export const InventoryView = ({
   inventory,
@@ -74,45 +74,38 @@ export const InventoryView = ({
 
   const handleUpdateStock = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingItem || !editingItem.name) return;
+    if (!editingItem) return;
 
-    if (!isManager) {
-      if ('id' in editingItem) {
-        setInventory(prev => prev.map(i => i.id === editingItem.id ? { ...i, stock: editingItem.stock! } : i));
-        try { await apiService.updateInventoryStock(editingItem.id!, editingItem.stock!); } catch { }
-        showToast(`${editingItem.name} stok güncellendi.`, 'success');
-      }
-    } else {
-      if ('id' in editingItem) {
-        setInventory(prev => prev.map(i => i.id === editingItem.id ? { ...(editingItem as InventoryItem) } : i));
-        try { await apiService.updateInventoryItem(editingItem.id!, editingItem as InventoryItem); } catch { }
-        showToast(`${editingItem.name} güncellendi.`, 'success');
-      } else {
-        try {
-          const res = await apiService.addInventoryItem(editingItem as Omit<InventoryItem, 'id'>) as { id: string };
-          const newItem = { ...editingItem, id: res.id || `inv-${Date.now()}` } as InventoryItem;
-          setInventory(prev => [...prev, newItem]);
+    try {
+      if (isManager) { // Manager can add or fully update
+        if (editingItem.id) {
+          await firebaseService.updateInventoryItem(editingItem.id, editingItem as InventoryItem);
+          showToast(`${editingItem.name} güncellendi.`, 'success');
+        } else {
+          await firebaseService.addInventoryItem(editingItem as Omit<InventoryItem, 'id'>);
           showToast(`${editingItem.name} eklendi.`, 'success');
-        } catch {
-          const newItem = { ...editingItem, id: `inv-${Date.now()}` } as InventoryItem;
-          setInventory(prev => [...prev, newItem]);
-          showToast(`${editingItem.name} eklendi (Yerel).`, 'success');
+        }
+      } else { // Non-manager can only update stock
+        if (editingItem.id) {
+          await firebaseService.updateInventoryItem(editingItem.id, { stock: editingItem.stock! });
+          showToast(`${editingItem.name} stok bilgisi güncellendi.`, 'success');
+        } else {
+          // This case should ideally not happen for non-managers as they can't add new items
+          showToast("Yetkiniz olmayan bir işlem yapmaya çalıştınız.", 'error');
         }
       }
+      setEditingItem(null);
+    } catch (error: any) {
+      console.error("Inventory operation error:", error);
+      showToast(`İşlem sırasında hata oluştu: ${error.message}`, 'error');
     }
-    setEditingItem(null);
   };
 
   const handleDeleteItem = async () => {
     if (!editingItem || !('id' in editingItem)) return;
     if (!confirm('Bu ürünü silmek istediğinize emin misiniz?')) return;
 
-    setInventory(prev => prev.filter(i => i.id !== editingItem.id));
-    try {
-      if (editingItem.id && !editingItem.id.startsWith('inv-')) {
-        await apiService.deleteInventoryItem(editingItem.id);
-      }
-    } catch { }
+    await firebaseService.deleteInventoryItem(editingItem.id!);
     showToast(`${editingItem.name} silindi.`, 'success');
     setEditingItem(null);
   };

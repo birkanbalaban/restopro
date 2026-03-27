@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChefHat, Clock, AlertCircle, StickyNote, CheckCircle2 } from 'lucide-react';
 import { cn } from '../utils';
 import { Order, OrderItem } from '../types';
-import { apiService } from '../services/apiService';
+import { firebaseService } from '../services/firebaseService';
 
 export function KitchenView({ orders, setOrders }: { orders: Order[], user: any, setOrders: React.Dispatch<React.SetStateAction<Order[]>> }) {
     const [, forceUpdate] = useState(0);
@@ -15,7 +15,7 @@ export function KitchenView({ orders, setOrders }: { orders: Order[], user: any,
 
     const handleStatusChange = async (orderId: string, itemId: string, newStatus: OrderItem['status']) => {
         try {
-            await apiService.updateOrderItemStatus(orderId, itemId, newStatus);
+            await firebaseService.updateOrderItemStatus(orderId, itemId, newStatus);
         } catch (error) {
             const msg = error instanceof Error ? error.message : 'Bilinmeyen hata';
             alert(`Durum güncellenemedi! Hata: ${msg}`);
@@ -24,7 +24,10 @@ export function KitchenView({ orders, setOrders }: { orders: Order[], user: any,
 
     const allItems = orders
         .filter(o => o.status === 'active')
-        .flatMap(o => o.items.map(i => ({ ...i, orderId: o.id, tableId: o.tableId, waiterName: o.waiterName || '' })));
+        .flatMap(o => o.items
+            .filter(i => i.printer === 'kitchen')
+            .map(i => ({ ...i, orderId: o.id, tableId: o.tableId, waiterName: o.waiterName || '' }))
+        );
 
     const columns: { key: OrderItem['status'], label: string, color: string, border: string, bg: string, btnLabel: string, nextStatus: OrderItem['status'] | null }[] = [
         { key: 'new', label: 'Bekliyor', color: 'text-rose-400', border: 'border-rose-500/30', bg: 'bg-rose-500/10', btnLabel: 'Hazırlamaya Başla →', nextStatus: 'preparing' },
