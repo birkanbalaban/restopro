@@ -8,6 +8,7 @@ Restopro, modern restoranlar ve kafeler için tasarlanmış; gerçek zamanlı se
 ## 🌟 Temel Yetenekler (Capabilities)
 
 ### 1. Dinamik Kat Planı (Floor Plan)
+![Floor Plan](assets/images/floorplan.png)
 - **Gerçek Zamanlı Durum:** Masaların doluluk oranını (Boş, Dolu, Hesap İstendi, Rezerve) anlık renk değişimleriyle izleyin.
 - **Hızlı Masa Yönetimi:** Kapasite kontrolü ve masa isimlendirme ile kolay kat planı oluşturma.
 - **Garson Takibi:** Hangi masayla hangi personelin ilgilendiğini anlık görün.
@@ -18,6 +19,7 @@ Restopro, modern restoranlar ve kafeler için tasarlanmış; gerçek zamanlı se
 - **Parçalı Ödeme & İptal:** Kalem bazlı işlem yapabilme yeteneği.
 
 ### 3. Mutfak Ekranı (KDS)
+![Kitchen Display System](assets/images/kds.png)
 - **Hazırlık Takibi:** "Beklemede -> Hazırlanıyor -> Hazır -> Servis Edildi" aşamalarıyla mutfak iş akışını yönetin.
 - **Zaman Takibi:** Siparişlerin ne kadar süredir beklediğini görerek servis kalitesini artırın.
 
@@ -30,6 +32,7 @@ Restopro, modern restoranlar ve kafeler için tasarlanmış; gerçek zamanlı se
 - **Vardiya Planlama:** Haftalık çalışma programları hazırlama ve rol bazlı (Admin/Garson/Aşçı) yetki tanımlama.
 
 ### 6. Envanter & Raporlama
+![Dashboard Analytics](assets/images/dashboard.png)
 - **Stok Takibi:** Kritik stok seviyeleri için uyarılar ve tedarikçi yönetimi.
 - **Satış Dashboard:** Günlük satış hacmi, popüler ürünler ve kategori bazlı performans analizi.
 
