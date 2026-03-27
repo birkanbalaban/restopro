@@ -14,7 +14,8 @@ import {
     Filter,
     Search,
     LogIn,
-    Edit2
+    Edit2,
+    Trash2
 } from 'lucide-react';
 import { cn } from '../utils';
 import { Reservation, Table } from '../types';
@@ -39,7 +40,7 @@ export function ReservationsView({
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingResId, setEditingResId] = useState<string | null>(null);
     const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'seated'>('all');
-    
+
     const [newRes, setNewRes] = useState({
         customerName: '',
         phone: '',
@@ -276,7 +277,18 @@ export function ReservationsView({
                                                 <XCircle size={16} />
                                             </button>
                                         </>
-                                    )}
+                                    <button
+                                        onClick={() => {
+                                            if (confirm('Bu rezervasyon kaydını tamamen silmek istediğinize emin misiniz?')) {
+                                                firebaseService.deleteReservation(res.id);
+                                                showToast('Rezervasyon silindi.', 'success');
+                                            }
+                                        }}
+                                        className="p-3 glass rounded-xl text-rose-500 hover:bg-rose-500/10 border border-rose-500/20 transition-all"
+                                        title="Sil"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
                                 </div>
                             </div>
                         </motion.div>

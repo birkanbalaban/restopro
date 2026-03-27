@@ -43,6 +43,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   // Data State
   const [tables, setTables] = useState<Table[]>(TABLES);
@@ -114,6 +115,12 @@ export default function App() {
       unsubReservations();
       unsubShifts();
     };
+  }, []);
+
+  // Update clock every second
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
   }, []);
 
   const handleLogout = () => {
@@ -242,8 +249,8 @@ export default function App() {
                 exit={{ opacity: 0, x: -20 }}
                 className="flex items-center gap-4"
               >
-                <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center shadow-lg shadow-accent/20">
-                  <ChefHat className="text-white" size={24} />
+                <div className="w-12 h-12 bg-accent/10 rounded-2xl flex items-center justify-center border border-accent/20">
+                  <img src="/assets/logo.png" alt="Restopro Logo" className="w-8 h-8 object-contain" />
                 </div>
                 <h2 className="text-xl font-black tracking-tighter">RESTOPRO</h2>
               </motion.div>
@@ -314,18 +321,28 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-8">
-            <div className="flex items-center gap-4 bg-[#161618] p-1.5 rounded-2xl border border-white/5">
+            <div className="hidden md:flex flex-col items-end gap-1">
+              <p className="text-sm font-black text-white px-3 py-1 bg-white/5 rounded-lg border border-white/10 uppercase tracking-widest tabular-nums">
+                {currentTime.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              </p>
+              <p className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em] pr-1 opacity-50">
+                {currentTime.toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-4 bg-[#161618] p-1.5 rounded-2xl border border-white/5 shadow-inner">
               <button
                 onClick={() => isManager && setActiveTab('settings')}
-                className="p-2.5 rounded-xl hover:bg-white/5 text-text-secondary transition-colors"
+                className="p-2.5 rounded-xl hover:bg-white/5 text-text-secondary transition-all hover:text-white"
+                title="Ayarlar"
               >
-                <Settings size={20} />
+                <Settings size={22} className="group-hover:rotate-45 transition-transform" />
               </button>
-              <div className="relative">
-                <button className="p-2.5 rounded-xl hover:bg-white/5 text-text-secondary transition-colors">
-                  <Bell size={20} />
+              <div className="relative group">
+                <button className="p-2.5 rounded-xl hover:bg-white/5 text-text-secondary transition-all hover:text-white">
+                  <Bell size={22} />
                 </button>
-                <span className="absolute top-2 right-2 w-2 h-2 bg-accent rounded-full border-2 border-[#161618]" />
+                <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-accent rounded-full border-2 border-[#161618] shadow-lg shadow-accent/40" />
               </div>
             </div>
 
